@@ -30,6 +30,29 @@ public class MatUtil {
 	 * @throws FileNotFoundException
 	 */
 
+	public static SparseDoubleMatrix2D readMatrixMarketSparse(String path) throws
+		FileNotFoundException {
+		Reader r = new FileReader(path);
+
+		System.out.println(r);
+
+		MatrixVectorReader t = new MatrixVectorReader(r);
+		// // try{
+		// // 	System.out.println(t.readMatrixInfo());
+		// // } catch(java.io.IOException e) {
+		// // 	e.printStackTrace();
+		// // }
+
+		// try {
+		// 	// SparseDoubleMatrix2D s = new SparseDoubleMatrix2D(t);
+		// 	// DenseDoubleMatrix2D s = new DenseDoubleMatrix2D(t);
+		// 	new DenseColDoubleMatrix2D(t);
+		// } catch(java.io.IOException e) {
+		// 	e.printStackTrace();
+		// }
+
+	}
+
 	public static DenseDoubleMatrix2D readMatrixMarket(String path) throws FileNotFoundException {
 		// Reader r = new FileReader(path);
 
