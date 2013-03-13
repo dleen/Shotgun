@@ -315,6 +315,16 @@ public class MatUtil {
 		return nnz;
 	}
 
+	public static float l0(DenseDoubleMatrix1D v) {
+		int nnz = 0;
+		for (int i = 0; i < v.size(); i++) {
+			if (Math.abs(v.getQuick(i)) > 1e-8) {
+				nnz++;
+			}
+		}
+		return nnz;
+	}
+
 	public static void main(String args[]) throws FileNotFoundException {
 		// Test loading the matrices
 		float[][] Xtrain = readMatrix("data/lasso_synthetic/Xtrain.mtx");

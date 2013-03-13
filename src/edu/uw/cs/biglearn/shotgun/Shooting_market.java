@@ -8,9 +8,19 @@ import java.util.concurrent.TimeUnit;
 
 import edu.uw.cs.biglearn.util.MatUtil;
 
+import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
+import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix1D;
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
+
+import cern.colt.matrix.tdouble.algo.DoubleBlas;
+import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
+import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 
 
-public class Shooting {
+public class Shooting_market {
+
+	final DoubleBlas db;
+	final DenseDoubleAlgebra da;
 
 	/* Dimension of X */
 	int n, p;
@@ -19,25 +29,25 @@ public class Shooting {
 	double lambda;
 
 	/* Stores the positive part of w */
-	float[] wplus;
+	DenseDoubleMatrix1D wplus;
 
 	/* Stores the negative part of w */
-	float[] wminus;
+	DenseDoubleMatrix1D wminus;
 
 	/* Stores the product of Xw */
-	float[] xw;
+	DenseDoubleMatrix1D xw;
 
 	/* The transpose of the design matrix X */
-	final float[][] XTrans;
+	final DenseDoubleMatrix2D XTrans;
 
 	/* The response vector Y. */
-	final float[] Y;
+	final DenseDoubleMatrix1D Y;
 
 	/* Stores the current parameter. */
-	float[] w;
+	DenseDoubleMatrix1D w;
 
 	/* Stores the stale parameter. */
-	float[] oldw;
+	DenseDoubleMatrix1D oldw;
 
 	static final int NUM_CORES = Runtime.getRuntime().availableProcessors();
 
@@ -47,21 +57,24 @@ public class Shooting {
 	 * @param Y
 	 * @param lambda
 	 */
-	public Shooting(float[][] XTrans, float[] Y, double lambda) {
+	public Shooting_market(DenseDoubleMatrix2D XTrans, DenseDoubleMatrix1D Y, double lambda) {
 		this.XTrans = XTrans;
 		this.Y = Y;
-		p = XTrans.length;
-		n = XTrans[0].length;
+		p = XTrans.rows();
+		n = XTrans.columns();
 		this.lambda = lambda;
 
 		/**
 		 * Initialize the parameter
 		 */
-		wplus = new float[p];
-		wminus = new float[p];
-		xw = new float[n];
-		w = new float[p];
-		oldw = new float[p];
+		wplus  = new DenseDoubleMatrix1D(p);
+		wminus = new DenseDoubleMatrix1D(p);
+		xw     = new DenseDoubleMatrix1D(n);
+		w      = new DenseDoubleMatrix1D(p);
+		oldw   = new DenseDoubleMatrix1D(p);
+
+		this.db = new SmpDoubleBlas();
+		this.da = new DenseDoubleAlgebra();
 	}
 
 	/**
@@ -70,45 +83,49 @@ public class Shooting {
 	 */
 	public void shoot(int K) {
 		Random r = new Random();
+		double upd = 0;
 
 		for (int i = 0; i < K; i++) {
-			int j = r.nextInt(2*p);
+			int j = r.nextInt(2 * p);
 
-			float grad_no_lambda =
-			(1.0f / n) * (- MatUtil.dot(this.Y, XTrans[j%p]) + MatUtil.dot(xw, XTrans[j%p]));
+			double grad_no_lambda =
+			(1.0d / n) * (- Y.zDotProduct(XTrans.viewRow(j % p)) +
+				xw.zDotProduct(XTrans.viewRow(j % p)));
 
 			if (j < p) {
-				float upd = Math.max(-wplus[j], -grad_no_lambda - (float)this.lambda);
-				wplus[j] += upd;
-				// System.out.println("Column? length");
-				// System.out.println(XTrans[j%p].length);
-				MatUtil.plusequal(xw, MatUtil.scale(XTrans[j], upd));
+				upd = Math.max(-wplus.get(j), -grad_no_lambda - this.lambda);
+				wplus.set(j, wplus.get(j) + upd);
+				db.daxpy(upd, XTrans.viewRow(j), xw);
 			}
 			else {
-				float upd = Math.max(-wminus[j%p], grad_no_lambda - (float)this.lambda);
-				wminus[j%p] += upd;
-				MatUtil.plusequal(xw, MatUtil.scale(XTrans[j%p], -upd));
+				upd = Math.max(-wminus.get(j % p), grad_no_lambda - this.lambda);
+				wminus.set(j % p, wminus.get(j % p) + upd);
+				db.daxpy(-upd, XTrans.viewRow(j % p), xw);
 			}
-
 		}
 	}
 
 	/**
 	 * Run Sequential SCD until convergence or exceeding maxiter.
 	 */
-	public float[] scd (int maxiter) {
+	public DenseDoubleMatrix1D scd (int maxiter) {
 		int iter = 0;
+
+		DenseDoubleMatrix1D wdelta;
+
 		while (iter  < maxiter) {
 			shoot(p);
-			w = MatUtil.minus(wplus, wminus);
-			float[] wdelta = MatUtil.minus(w, oldw);
-			float delta = MatUtil.l2(wdelta);
+			w = (DenseDoubleMatrix1D)wplus.copy();
+			db.daxpy(-1.0, wminus, w);
+			wdelta = (DenseDoubleMatrix1D)w.copy();
+			db.daxpy(-1.0, oldw, wdelta);
+			double delta = da.norm2(wdelta);
 			if (delta < 1e-5) {
 				System.out.println(MatUtil.l0(w));
 				// System.out.println(iter);
 				break;
 			}
-			oldw = w.clone();
+			oldw = (DenseDoubleMatrix1D)w.copy();
 			iter++;
 				// System.out.println(MatUtil.l2(w));
 				// System.out.println(iter);
@@ -119,9 +136,11 @@ public class Shooting {
 	/**
 	 * Run Shotgun parallel SCD until convergence or exceeding maxiter.
 	 */
-	public float[] shotgun (int maxiter) {
+	public DenseDoubleMatrix1D shotgun (int maxiter) {
 		final int batchsize = p;
 		int iter = 0;
+
+		DenseDoubleMatrix1D wdelta;
 
 		while(iter < maxiter) {
 			ExecutorService threadpool = Executors.newFixedThreadPool(NUM_CORES);
@@ -146,13 +165,15 @@ public class Shooting {
 			}
 
 			// check whether the result has converged.
-			w = MatUtil.minus(wplus, wminus);
-			float[] wdelta = MatUtil.minus(w, oldw);
-			float delta = MatUtil.l2(wdelta);
+			w = (DenseDoubleMatrix1D)wplus.copy();
+			db.daxpy(-1.0, wminus, w);
+			wdelta = (DenseDoubleMatrix1D)w.copy();
+			db.daxpy(-1.0, oldw, wdelta);
+			double delta = da.norm2(wdelta);
 			if (delta < 1e-5) {
 				break;
 			}
-			oldw = w.clone();
+			oldw = (DenseDoubleMatrix1D)w.copy();
 		}
 		return w;
 	}
