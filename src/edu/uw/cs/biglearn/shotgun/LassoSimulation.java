@@ -60,10 +60,10 @@ public class LassoSimulation {
 		int p = Xtrain_trans.rows();
 		int n = Xtrain_trans.columns();
 
-		// System.out.println("Rows:");
-		// System.out.println(p);
-		// System.out.println("Cols:");
-		// System.out.println(n);
+		System.out.println("Rows:");
+		System.out.println(p);
+		System.out.println("Cols:");
+		System.out.println(n);
 
 		DoubleBlas db = new SmpDoubleBlas();
 		DenseDoubleAlgebra da = new DenseDoubleAlgebra();
@@ -75,7 +75,8 @@ public class LassoSimulation {
 		double start = System.currentTimeMillis();
 		for (double lambda: lambdas) {
 			Shooting_market_sparse S = new Shooting_market_sparse(Xtrain_trans, Ytrain, lambda);
-			DenseDoubleMatrix1D what = S.scd(p * 10);
+			DenseDoubleMatrix1D what = S.scd(1000);
+			// DenseDoubleMatrix1D what = S.scd(p * 10);
 			// Shooting S = new Shooting(Xtrain_trans, Ytrain, lambda);
 			// float[] what = S.scd(p * 10);
 			results.add(what);

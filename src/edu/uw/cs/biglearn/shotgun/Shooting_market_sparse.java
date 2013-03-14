@@ -43,7 +43,7 @@ public class Shooting_market_sparse {
 	final SparseDoubleMatrix2D XTrans;
 
 	/* The response vector Y. */
-	final SparseDoubleMatrix1D Y;
+	final DenseDoubleMatrix1D Y;
 
 	/* Stores the current parameter. */
 	DenseDoubleMatrix1D w;
@@ -59,7 +59,7 @@ public class Shooting_market_sparse {
 	 * @param Y
 	 * @param lambda
 	 */
-	public Shooting_market_sparse(SparseDoubleMatrix2D XTrans, SparseDoubleMatrix1D Y, double lambda) {
+	public Shooting_market_sparse(SparseDoubleMatrix2D XTrans, DenseDoubleMatrix1D Y, double lambda) {
 		this.XTrans = XTrans;
 		this.Y = Y;
 		p = XTrans.rows();
@@ -69,6 +69,12 @@ public class Shooting_market_sparse {
 		/**
 		 * Initialize the parameter
 		 */
+		// wplus  = new DenseDoubleMatrix1D(p);
+		// wminus = new DenseDoubleMatrix1D(p);
+		// xw     = new DenseDoubleMatrix1D(n);
+		// w      = new DenseDoubleMatrix1D(p);
+		// oldw   = new DenseDoubleMatrix1D(p);
+
 		wplus  = new DenseDoubleMatrix1D(p);
 		wminus = new DenseDoubleMatrix1D(p);
 		xw     = new DenseDoubleMatrix1D(n);
@@ -91,6 +97,7 @@ public class Shooting_market_sparse {
 			int j = r.nextInt(2 * p);
 
 			double grad_no_lambda =
+			// why is Y dense. Should be sparse no?
 			(1.0d / n) * (- Y.zDotProduct(XTrans.viewRow(j % p)) +
 				xw.zDotProduct(XTrans.viewRow(j % p)));
 
@@ -116,12 +123,14 @@ public class Shooting_market_sparse {
 		DenseDoubleMatrix1D wdelta;
 
 		while (iter  < maxiter) {
-			shoot(p);
+			shoot(p); // only do non zero coords here!!!
+			// hang on, why only do the non zero ones?
 			w = (DenseDoubleMatrix1D)wplus.copy();
 			db.daxpy(-1.0, wminus, w);
 			wdelta = (DenseDoubleMatrix1D)w.copy();
 			db.daxpy(-1.0, oldw, wdelta);
 			double delta = da.norm2(wdelta);
+			System.out.println(delta);
 			if (delta < 1e-5) {
 				System.out.println(MatUtil.l0(w));
 				// System.out.println(iter);
