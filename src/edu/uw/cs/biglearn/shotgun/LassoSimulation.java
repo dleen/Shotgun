@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import edu.uw.cs.biglearn.util.MatUtil;
 
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
+import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
+import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 
@@ -31,15 +33,18 @@ public class LassoSimulation {
 
 		// ArrayList<float[]> results = new ArrayList<float[]>();
 
-		double[] lambdas = new double[] {0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2};
 
+		double[] lambdas = new double[] {0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2};
 		ArrayList<DenseDoubleMatrix1D> results = new ArrayList<DenseDoubleMatrix1D>();
 
-		DenseDoubleMatrix2D Xtrain_trans = MatUtil.readMatrixMarket("data/lasso_synthetic/Xtrain.mtx");
-		DenseDoubleMatrix2D Xtest_trans = MatUtil.readMatrixMarket("data/lasso_synthetic/Xtest.mtx");
-		DenseDoubleMatrix1D Ytrain = MatUtil.readVectorMarket("data/lasso_synthetic/Ytrain.mtx");
-		DenseDoubleMatrix1D Ytest = MatUtil.readVectorMarket("data/lasso_synthetic/Ytest.mtx");
-
+		// DenseDoubleMatrix2D Xtrain_transt = MatUtil.readMatrixMarket("data/lasso_synthetic/Xtrain.mtx");
+		// DenseDoubleMatrix2D Xtest_trans = MatUtil.readMatrixMarket("data/lasso_synthetic/Xtest.mtx");
+		// DenseDoubleMatrix1D Ytrain = MatUtil.readVectorMarket("data/lasso_synthetic/Ytrain.mtx");
+		// DenseDoubleMatrix1D Ytest = MatUtil.readVectorMarket("data/lasso_synthetic/Ytest.mtx");
+		SparseDoubleMatrix2D Xtrain_trans = MatUtil.readMatrixMarketSparse("data/lasso_synthetic/Xtrain.mtx_sparse");
+		SparseDoubleMatrix2D Xtest_trans = MatUtil.readMatrixMarketSparse("data/lasso_synthetic/Xtest.mtx_sparse");
+		SparseDoubleMatrix1D Ytrain = MatUtil.readVectorMarketSparse("data/lasso_synthetic/Ytrain.mtx_sparse");
+		SparseDoubleMatrix1D Ytest = MatUtil.readVectorMarketSparse("data/lasso_synthetic/Ytest.mtx_sparse");
 
 		int p = Xtrain_trans.rows();
 		int n = Xtrain_trans.columns();
@@ -53,7 +58,7 @@ public class LassoSimulation {
 		 */
 		double start = System.currentTimeMillis();
 		for (double lambda: lambdas) {
-			Shooting_market S = new Shooting_market(Xtrain_trans, Ytrain, lambda);
+			Shooting_market_sparse S = new Shooting_market_sparse(Xtrain_trans, Ytrain, lambda);
 			DenseDoubleMatrix1D what = S.scd(p * 10);
 			// Shooting S = new Shooting(Xtrain_trans, Ytrain, lambda);
 			// float[] what = S.scd(p * 10);
@@ -63,7 +68,7 @@ public class LassoSimulation {
 		System.out.println("Elapsed time: " + elapsed/1000 + "secs");
 
 		System.out.println(results.get(0));
-		// System.out.println(Arrays.toString(results.get(0)));
+		// // System.out.println(Arrays.toString(results.get(0)));
 
 		/**
 		 * Evaluate training error and test error.

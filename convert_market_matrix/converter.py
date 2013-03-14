@@ -10,6 +10,8 @@ def convert_mm(path):
     rows = int(dims[0])
     cols = int(dims[1])
 
+    f_sparse.write('%d %d %d\n' % (rows, cols, rows * cols))
+
     row = 1
     col = 1
 

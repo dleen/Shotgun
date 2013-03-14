@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 import cern.colt.matrix.io.MatrixVectorReader;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
+import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix1D;
@@ -30,8 +31,29 @@ public class MatUtil {
 	 * @throws FileNotFoundException
 	 */
 
-	public static SparseDoubleMatrix2D readMatrixMarketSparse(String path) throws
-		FileNotFoundException {
+	public static SparseDoubleMatrix1D readVectorMarketSparse(String path) throws FileNotFoundException {
+		Reader r = new FileReader(path);
+
+		System.out.println(r);
+
+		MatrixVectorReader t = new MatrixVectorReader(r);
+
+		SparseDoubleMatrix2D s = new SparseDoubleMatrix2D(1,1);
+		// s.assign(0);
+		try {
+			System.out.println(t.readMatrixInfo());
+			s = new SparseDoubleMatrix2D(t);
+			// System.out.println(s);
+		// 	// DenseDoubleMatrix2D s = new DenseDoubleMatrix2D(t);
+		// 	new DenseColDoubleMatrix2D(t);
+		} catch(java.io.IOException e) {
+			e.printStackTrace();
+		}
+
+		return (SparseDoubleMatrix1D)s.viewColumn(0);
+	}
+
+	public static SparseDoubleMatrix2D readMatrixMarketSparse(String path) throws FileNotFoundException {
 		Reader r = new FileReader(path);
 
 		System.out.println(r);
@@ -42,15 +64,18 @@ public class MatUtil {
 		// // } catch(java.io.IOException e) {
 		// // 	e.printStackTrace();
 		// // }
-
-		// try {
-		// 	// SparseDoubleMatrix2D s = new SparseDoubleMatrix2D(t);
+		SparseDoubleMatrix2D s = new SparseDoubleMatrix2D(1,1);
+		// s.assign(0);
+		try {
+			System.out.println(t.readMatrixInfo());
+			s = new SparseDoubleMatrix2D(t);
+			// System.out.println(s);
 		// 	// DenseDoubleMatrix2D s = new DenseDoubleMatrix2D(t);
 		// 	new DenseColDoubleMatrix2D(t);
-		// } catch(java.io.IOException e) {
-		// 	e.printStackTrace();
-		// }
-
+		} catch(java.io.IOException e) {
+			e.printStackTrace();
+		}
+		return (SparseDoubleMatrix2D)s.viewDice();
 	}
 
 	public static DenseDoubleMatrix2D readMatrixMarket(String path) throws FileNotFoundException {
