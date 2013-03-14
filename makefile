@@ -1,1 +1,1 @@
-javac -server -cp './lib/*:.'  -sourcepath src -d target src/edu/uw/cs/biglearn/shotgun/FMRIWordPrediction.java src/edu/uw/cs/biglearn/shotgun/LassoSimulation.java src/edu/uw/cs/biglearn/shotgun/Shooting.java src/edu/uw/cs/biglearn/util/MatUtil.java
+javac -cp './lib/*:.'  -sourcepath src -d target src/edu/uw/cs/biglearn/shotgun/FMRIWordPrediction.java src/edu/uw/cs/biglearn/shotgun/LassoSimulation.java src/edu/uw/cs/biglearn/shotgun/Shooting.java src/edu/uw/cs/biglearn/util/MatUtil.java

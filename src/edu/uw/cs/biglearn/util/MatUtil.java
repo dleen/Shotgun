@@ -13,7 +13,12 @@ import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 
+import cern.colt.matrix.tfloat.impl.DenseFloatMatrix1D;
+import cern.colt.matrix.tfloat.impl.DenseFloatMatrix2D;
+
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix1D;
+
+import cern.colt.matrix.tint.impl.SparseIntMatrix2D;
 
 /**
  * A collection of matrix operations.
@@ -59,23 +64,52 @@ public class MatUtil {
 		System.out.println(r);
 
 		MatrixVectorReader t = new MatrixVectorReader(r);
-		// // try{
-		// // 	System.out.println(t.readMatrixInfo());
-		// // } catch(java.io.IOException e) {
-		// // 	e.printStackTrace();
-		// // }
+
 		SparseDoubleMatrix2D s = new SparseDoubleMatrix2D(1,1);
 		// s.assign(0);
 		try {
 			System.out.println(t.readMatrixInfo());
 			s = new SparseDoubleMatrix2D(t);
-			// System.out.println(s);
-		// 	// DenseDoubleMatrix2D s = new DenseDoubleMatrix2D(t);
-		// 	new DenseColDoubleMatrix2D(t);
 		} catch(java.io.IOException e) {
 			e.printStackTrace();
 		}
 		return (SparseDoubleMatrix2D)s.viewDice();
+	}
+
+	public static SparseIntMatrix2D readMatrixMarketSparseInt(String path) throws FileNotFoundException {
+		Reader r = new FileReader(path);
+
+		System.out.println(r);
+
+		MatrixVectorReader t = new MatrixVectorReader(r);
+
+		SparseIntMatrix2D s = new SparseIntMatrix2D(1,1);
+		// s.assign(0);
+		try {
+			System.out.println(t.readMatrixInfo());
+			s = new SparseIntMatrix2D(t);
+		} catch(java.io.IOException e) {
+			e.printStackTrace();
+		}
+		return (SparseIntMatrix2D)s.viewDice();
+	}
+
+	public static DenseDoubleMatrix1D readVectorMarketDense(String path) throws FileNotFoundException {
+		Reader r = new FileReader(path);
+
+		System.out.println(r);
+
+		MatrixVectorReader t = new MatrixVectorReader(r);
+
+		DenseDoubleMatrix2D s = new DenseDoubleMatrix2D(1,1);
+
+		try {
+			System.out.println(t.readMatrixInfo());
+			s = new DenseDoubleMatrix2D(t);
+		} catch(java.io.IOException e) {
+			e.printStackTrace();
+		}
+		return (DenseDoubleMatrix1D)s.viewColumn(0);
 	}
 
 	public static DenseDoubleMatrix2D readMatrixMarket(String path) throws FileNotFoundException {

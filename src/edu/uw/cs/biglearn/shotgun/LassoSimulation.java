@@ -9,6 +9,7 @@ import edu.uw.cs.biglearn.util.MatUtil;
 
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
+import cern.colt.matrix.tint.impl.SparseIntMatrix2D;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
@@ -16,6 +17,9 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 import cern.colt.matrix.tdouble.algo.DoubleBlas;
 import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
+
+import cern.colt.matrix.tfloat.impl.DenseFloatMatrix1D;
+
 
 public class LassoSimulation {
 
@@ -41,13 +45,25 @@ public class LassoSimulation {
 		// DenseDoubleMatrix2D Xtest_trans = MatUtil.readMatrixMarket("data/lasso_synthetic/Xtest.mtx");
 		// DenseDoubleMatrix1D Ytrain = MatUtil.readVectorMarket("data/lasso_synthetic/Ytrain.mtx");
 		// DenseDoubleMatrix1D Ytest = MatUtil.readVectorMarket("data/lasso_synthetic/Ytest.mtx");
-		SparseDoubleMatrix2D Xtrain_trans = MatUtil.readMatrixMarketSparse("data/lasso_synthetic/Xtrain.mtx_sparse");
-		SparseDoubleMatrix2D Xtest_trans = MatUtil.readMatrixMarketSparse("data/lasso_synthetic/Xtest.mtx_sparse");
-		SparseDoubleMatrix1D Ytrain = MatUtil.readVectorMarketSparse("data/lasso_synthetic/Ytrain.mtx_sparse");
-		SparseDoubleMatrix1D Ytest = MatUtil.readVectorMarketSparse("data/lasso_synthetic/Ytest.mtx_sparse");
+
+		// SparseDoubleMatrix2D Xtrain_trans = MatUtil.readMatrixMarketSparse("data/lasso_synthetic/Xtrain.mtx_sparse");
+		// SparseDoubleMatrix2D Xtest_trans = MatUtil.readMatrixMarketSparse("data/lasso_synthetic/Xtest.mtx_sparse");
+		// SparseDoubleMatrix1D Ytrain = MatUtil.readVectorMarketSparse("data/lasso_synthetic/Ytrain.mtx_sparse");
+		// SparseDoubleMatrix1D Ytest = MatUtil.readVectorMarketSparse("data/lasso_synthetic/Ytest.mtx_sparse");
+
+		SparseDoubleMatrix2D Xtrain_trans = MatUtil.readMatrixMarketSparse("data/click/train.mtx");
+		SparseDoubleMatrix2D Xtest_trans = MatUtil.readMatrixMarketSparse("data/click/test.mtx");
+
+		DenseDoubleMatrix1D Ytrain = MatUtil.readVectorMarket("data/click/y_train.mtx");
+		DenseDoubleMatrix1D Ytest = MatUtil.readVectorMarket("data/click/y_train.mtx");
 
 		int p = Xtrain_trans.rows();
 		int n = Xtrain_trans.columns();
+
+		// System.out.println("Rows:");
+		// System.out.println(p);
+		// System.out.println("Cols:");
+		// System.out.println(n);
 
 		DoubleBlas db = new SmpDoubleBlas();
 		DenseDoubleAlgebra da = new DenseDoubleAlgebra();
@@ -76,33 +92,33 @@ public class LassoSimulation {
 		int i = 0;
 
 
-		for (DenseDoubleMatrix1D what : results) {
-		// for (float[] what : results) {
-			System.out.println("Lambda: " + lambdas[i]);
+		// for (DenseDoubleMatrix1D what : results) {
+		// // for (float[] what : results) {
+		// 	System.out.println("Lambda: " + lambdas[i]);
 
-			Xtrain_trans.zMult(what, Ytrain, 1.0d, -1.0d, true);
-			// db.daxpy(-1.0, temp, Ytrain);
-			double trainerror = da.norm2(Ytrain);
+		// 	Xtrain_trans.zMult(what, Ytrain, 1.0d, -1.0d, true);
+		// 	// db.daxpy(-1.0, temp, Ytrain);
+		// 	double trainerror = da.norm2(Ytrain);
 
-			trainerror = (double) (Math.pow(trainerror, 2) / Ytrain.size());
+		// 	trainerror = (double) (Math.pow(trainerror, 2) / Ytrain.size());
 
-			Xtest_trans.zMult(what, Ytest, 1.0d, -1.0d, true);
-			// db.daxpy(-1.0, temp, Ytest);
-			double testerror = da.norm2(Ytest);
+		// 	Xtest_trans.zMult(what, Ytest, 1.0d, -1.0d, true);
+		// 	// db.daxpy(-1.0, temp, Ytest);
+		// 	double testerror = da.norm2(Ytest);
 
-			testerror = (double) (Math.pow(testerror, 2) / Ytest.size());
+		// 	testerror = (double) (Math.pow(testerror, 2) / Ytest.size());
 
-			// float trainerror = MatUtil.l2(MatUtil.minus(MatUtil.multiply(Xtrain_trans, what), Ytrain));
-			// trainerror = (float) (Math.pow(trainerror, 2) / Ytrain.length);
+		// 	// float trainerror = MatUtil.l2(MatUtil.minus(MatUtil.multiply(Xtrain_trans, what), Ytrain));
+		// 	// trainerror = (float) (Math.pow(trainerror, 2) / Ytrain.length);
 
-			// float testerror = MatUtil.l2(MatUtil.minus(MatUtil.multiply(Xtest_trans, what), Ytest));
-			// testerror = (float) (Math.pow(trainerror, 2) / Ytrain.length);
+		// 	// float testerror = MatUtil.l2(MatUtil.minus(MatUtil.multiply(Xtest_trans, what), Ytest));
+		// 	// testerror = (float) (Math.pow(trainerror, 2) / Ytrain.length);
 
-			System.out.println("Training error : " + trainerror);
-			System.out.println("Test error: " + testerror);
-			System.out.println("NNZ: " + MatUtil.l0(what));
-			++i;
-		}
+		// 	System.out.println("Training error : " + trainerror);
+		// 	System.out.println("Test error: " + testerror);
+		// 	System.out.println("NNZ: " + MatUtil.l0(what));
+		// 	++i;
+		// }
 	}
 
 	public static void main(String[] args) throws FileNotFoundException {
